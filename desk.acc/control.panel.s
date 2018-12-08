@@ -422,21 +422,21 @@ joycal_y := 65
 str_calibrate_joystick:
         DEFINE_STRING "Calibrate Joystick"
 joystick_label_pos:
-        DEFINE_POINT joycal_x + 30, joycal_y + 47
+        DEFINE_POINT joycal_x + 30, joycal_y + 48
 
 joy_disp_x := joycal_x + 80
 joy_disp_y := joycal_y + 20 - 6
 
 joy_disp_frame_rect:
-        DEFINE_RECT joy_disp_x - 32    , joy_disp_y - 16    , joy_disp_x + 32 + 7 - 5 + 1    , joy_disp_y + 16 + 4 + 1 - 2
+        DEFINE_RECT joy_disp_x - 32    , joy_disp_y - 16    , joy_disp_x + 32 + 7 + 1    , joy_disp_y + 16 + 4 + 1
 joy_disp_rect:
-        DEFINE_RECT joy_disp_x - 32 + 1, joy_disp_y - 16 + 1, joy_disp_x + 32 + 7 - 5 + 1 - 1, joy_disp_y + 16 + 4 + 1 - 1 - 2
+        DEFINE_RECT joy_disp_x - 32 + 1, joy_disp_y - 16 + 1, joy_disp_x + 32 + 7 + 1 - 1, joy_disp_y + 16 + 4 + 1 - 1
 
-joy_btn0:       DEFINE_POINT joy_disp_x + 58, joy_disp_y - 8, joy_btn0
-joy_btn1:       DEFINE_POINT joy_disp_x + 58, joy_disp_y + 6, joy_btn1
+joy_btn0:       DEFINE_POINT joy_disp_x + 58 + 4, joy_disp_y - 8, joy_btn0
+joy_btn1:       DEFINE_POINT joy_disp_x + 58 + 4, joy_disp_y + 6, joy_btn1
 
-joy_btn0_lpos: DEFINE_POINT joy_disp_x + 48, joy_disp_y - 8 + 8
-joy_btn1_lpos: DEFINE_POINT joy_disp_x + 48, joy_disp_y + 6 + 8
+joy_btn0_lpos: DEFINE_POINT joy_disp_x + 48 + 4, joy_disp_y - 8 + 8
+joy_btn1_lpos: DEFINE_POINT joy_disp_x + 48 + 4, joy_disp_y + 6 + 8
 
 joy_btn0_label:   DEFINE_STRING "0"
 joy_btn1_label:   DEFINE_STRING "1"
@@ -1344,6 +1344,14 @@ pattern_abrick:
         lsr
         sta     joy_y
 
+        lda     BUTN0
+        and     #$80            ; only care about msb
+        sta     butn0
+
+        lda     BUTN1
+        and     #$80            ; only care about msb
+        sta     butn1
+
         ;; Changed? (or first time through)
         lda     last_joy_valid_flag
         beq     changed
@@ -1353,6 +1361,12 @@ pattern_abrick:
         lda     joy_y
         cmp     last_y
         bne     changed
+        lda     butn0
+        cmp     last_b0
+        bne     changed
+        lda     butn1
+        cmp     last_b1
+        bne     changed
         rts
 
 changed:
@@ -1360,6 +1374,10 @@ changed:
         sta     last_x
         lda     joy_y
         sta     last_y
+        lda     butn0
+        sta     last_b0
+        lda     butn1
+        sta     last_b1
         lda     #$80
         sta     last_joy_valid_flag
 
@@ -1376,10 +1394,10 @@ changed:
         ;; Defer if content area is not visible
         MGTK_CALL MGTK::GetWinPort, winport_params
         cmp     #MGTK::Error::window_obscured
-        beq     done
+        bne     :+
+        rts
 
-
-        MGTK_CALL MGTK::GetWinPort, winport_params
+:       MGTK_CALL MGTK::GetWinPort, winport_params
         MGTK_CALL MGTK::SetPort, grafport
         MGTK_CALL MGTK::HideCursor
 
@@ -1390,19 +1408,42 @@ changed:
 
         MGTK_CALL MGTK::PaintBits, joy_marker
 
+draw_b0:
+        lda     butn0
+        bne     :+
+        copy16  joy_btn0::xcoord, unchecked_params::viewloc::xcoord
+        copy16  joy_btn0::ycoord, unchecked_params::viewloc::ycoord
+        MGTK_CALL MGTK::PaintBits, unchecked_params
+        jmp     draw_b1
+:
         copy16  joy_btn0::xcoord, checked_params::viewloc::xcoord
         copy16  joy_btn0::ycoord, checked_params::viewloc::ycoord
         MGTK_CALL MGTK::PaintBits, checked_params
 
+draw_b1:
+        lda     butn1
+        bne     :+
+        copy16  joy_btn1::xcoord, unchecked_params::viewloc::xcoord
+        copy16  joy_btn1::ycoord, unchecked_params::viewloc::ycoord
+        MGTK_CALL MGTK::PaintBits, unchecked_params
+        jmp     done_buttons
+:
         copy16  joy_btn1::xcoord, checked_params::viewloc::xcoord
         copy16  joy_btn1::ycoord, checked_params::viewloc::ycoord
         MGTK_CALL MGTK::PaintBits, checked_params
+done_buttons:
+
 
         MGTK_CALL MGTK::ShowCursor
 done:   rts
 
+butn0:  .byte   0
+butn1:  .byte   0
+
 last_x: .byte   0
 last_y: .byte   0
+last_b0:.byte   0
+last_b1:.byte   0
 
 pencopy:        .byte   MGTK::pencopy
 notpencopy:     .byte   MGTK::notpencopy
