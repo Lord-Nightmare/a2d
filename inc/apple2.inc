@@ -168,6 +168,9 @@ HIRESOFF        := $C057
 DHIRESON        := $C05E
 DHIRESOFF       := $C05F
 
+PADDL0          := $C064
+PTRIG           := $C070
+
 ;;; Routines
 SLOT3ENTRY      := $C300
 AUXMOVE         := $C311        ; carry set main>aux, carry clear aux>main

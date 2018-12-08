@@ -49,7 +49,7 @@ entry:
 
 da_window_id    := 61
 da_width        := 420
-da_height       := 70
+da_height       := 120
 da_left         := (screen_width - da_width)/2
 da_top          := (screen_height - da_height - 8)/2
 
@@ -58,10 +58,10 @@ str_title:
 
 .proc winfo
 window_id:      .byte   da_window_id
-options:        .byte   MGTK::option_go_away_box
+options:        .byte   MGTK::Option::go_away_box
 title:          .addr   str_title
-hscroll:        .byte   MGTK::scroll_option_none
-vscroll:        .byte   MGTK::scroll_option_none
+hscroll:        .byte   MGTK::Scroll::option_none
+vscroll:        .byte   MGTK::Scroll::option_none
 hthumbmax:      .byte   32
 hthumbpos:      .byte   0
 vthumbmax:      .byte   32
@@ -91,10 +91,10 @@ nextwinfo:      .addr   0
 
 .proc winfo_fullscreen
 window_id:      .byte   da_window_id+1
-options:        .byte   MGTK::option_dialog_box
+options:        .byte   MGTK::Option::dialog_box
 title:          .addr   str_title
-hscroll:        .byte   MGTK::scroll_option_none
-vscroll:        .byte   MGTK::scroll_option_none
+hscroll:        .byte   MGTK::Scroll::option_none
+vscroll:        .byte   MGTK::Scroll::option_none
 hthumbmax:      .byte   32
 hthumbpos:      .byte   0
 vthumbmax:      .byte   32
@@ -355,6 +355,7 @@ dblclick_bitmap:
         .byte   px(%1100000),px(%0000000),px(%0000110),px(%0000000),px(%0000001),px(%1000000),px(%0000000),px(%0001100)
         .byte   px(%1100000),px(%0000000),px(%0000110),px(%0000000),px(%0000001),px(%1000000),px(%0000000),px(%0001100)
 
+
 .proc darrow_params
 viewloc:        DEFINE_POINT 0, 0
 mapbits:        .addr   darr_bitmap
@@ -374,7 +375,7 @@ darr_bitmap:
         .byte   px(%0000000),px(%0100000),px(%0000000)
 
 .proc checked_params
-viewloc:        DEFINE_POINT 0, 0
+viewloc:        DEFINE_POINT 0, 0, viewloc
 mapbits:        .addr   checked_bitmap
 mapwidth:       .byte   3
 reserved:       .byte   0
@@ -393,7 +394,7 @@ checked_bitmap:
 
 
 .proc unchecked_params
-viewloc:        DEFINE_POINT 0, 0
+viewloc:        DEFINE_POINT 0, 0, viewloc
 mapbits:        .addr   unchecked_bitmap
 mapwidth:       .byte   3
 reserved:       .byte   0
@@ -411,10 +412,89 @@ unchecked_bitmap:
         .byte   px(%0000111),px(%1111100),px(%0000000)
 
 ;;; ============================================================
+;;; Joystick Calibration Resources
+
+
+joycal_x := 16
+joycal_y := 65
+
+
+str_calibrate_joystick:
+        DEFINE_STRING "Calibrate Joystick"
+joystick_label_pos:
+        DEFINE_POINT joycal_x + 30, joycal_y + 47
+
+joy_disp_x := joycal_x + 80
+joy_disp_y := joycal_y + 20 - 6
+
+joy_disp_frame_rect:
+        DEFINE_RECT joy_disp_x - 32    , joy_disp_y - 16    , joy_disp_x + 32 + 7 - 5 + 1    , joy_disp_y + 16 + 4 + 1 - 2
+joy_disp_rect:
+        DEFINE_RECT joy_disp_x - 32 + 1, joy_disp_y - 16 + 1, joy_disp_x + 32 + 7 - 5 + 1 - 1, joy_disp_y + 16 + 4 + 1 - 1 - 2
+
+joy_btn0:       DEFINE_POINT joy_disp_x + 58, joy_disp_y - 8, joy_btn0
+joy_btn1:       DEFINE_POINT joy_disp_x + 58, joy_disp_y + 6, joy_btn1
+
+joy_btn0_lpos: DEFINE_POINT joy_disp_x + 48, joy_disp_y - 8 + 8
+joy_btn1_lpos: DEFINE_POINT joy_disp_x + 48, joy_disp_y + 6 + 8
+
+joy_btn0_label:   DEFINE_STRING "0"
+joy_btn1_label:   DEFINE_STRING "1"
+
+.proc joy_marker
+viewloc:        DEFINE_POINT 0, 0, viewloc
+mapbits:        .addr   joy_marker_bitmap
+mapwidth:       .byte   2
+reserved:       .byte   0
+cliprect:       DEFINE_RECT 0, 0, 7, 4
+.endproc
+
+joy_marker_bitmap:
+        .byte   px(%0011110),px(%0000000)
+        .byte   px(%0111111),px(%0000000)
+        .byte   px(%1111111),px(%1000000)
+        .byte   px(%0111111),px(%0000000)
+        .byte   px(%0011110),px(%0000000)
+
+
+.proc joystick_params
+viewloc:        DEFINE_POINT joycal_x, joycal_y + 5
+mapbits:        .addr   joystick_bitmap
+mapwidth:       .byte   6
+reserved:       .byte   0
+cliprect:       DEFINE_RECT 0, 0, 37, 18
+.endproc
+
+joystick_bitmap:
+        .byte   px(%0000000),px(%0000000),px(%0000110),px(%0000000),px(%0000000),px(%0000000)
+        .byte   px(%0000000),px(%0000000),px(%0011111),px(%1000000),px(%0000000),px(%0000000)
+        .byte   px(%0000000),px(%0000010),px(%0011111),px(%1000100),px(%0000000),px(%0000000)
+        .byte   px(%0000000),px(%0100010),px(%0011111),px(%1000100),px(%0100000),px(%0000000)
+        .byte   px(%0000000),px(%0100010),px(%0011111),px(%1000100),px(%0100000),px(%0000000)
+        .byte   px(%0000000),px(%0100010),px(%0011111),px(%1000100),px(%0100000),px(%0000000)
+        .byte   px(%0000000),px(%0000010),px(%0011111),px(%1000100),px(%0000000),px(%0000000)
+        .byte   px(%0000000),px(%0000000),px(%0011111),px(%1000000),px(%0000000),px(%0000000)
+        .byte   px(%0000000),px(%0000000),px(%0001111),px(%0000000),px(%0000000),px(%0000000)
+        .byte   px(%0000000),px(%1111000),px(%0000110),px(%0000001),px(%1110000),px(%0000000)
+        .byte   px(%0000001),px(%1111100),px(%0000110),px(%0000011),px(%1111000),px(%0000000)
+        .byte   px(%0111111),px(%1111111),px(%1000110),px(%0011111),px(%1111111),px(%1100000)
+        .byte   px(%1100000),px(%0000000),px(%1111111),px(%1110000),px(%0000000),px(%0110000)
+        .byte   px(%1100000),px(%0000000),px(%0000000),px(%0000000),px(%0000000),px(%0110000)
+        .byte   px(%1100000),px(%0000000),px(%0000000),px(%0000000),px(%0000000),px(%0110000)
+        .byte   px(%1100000),px(%0000000),px(%0000000),px(%0000000),px(%0000000),px(%0110000)
+        .byte   px(%0111111),px(%1111111),px(%1111111),px(%1111111),px(%1111111),px(%1100000)
+        .byte   px(%1100000),px(%0000000),px(%0000000),px(%0000000),px(%0000000),px(%0110000)
+        .byte   px(%0111111),px(%1111111),px(%1111111),px(%1111111),px(%1111111),px(%1100000)
+
+
+;;; ============================================================
 
 .proc init
         jsr     init_pattern
-        jsr     init_dblclick
+
+        ;; TODO: Enable properly
+        ;;         jsr     init_dblclick
+
         MGTK_CALL MGTK::OpenWindow, winfo
         jsr     draw_window
         MGTK_CALL MGTK::FlushEvents
@@ -425,10 +505,13 @@ unchecked_bitmap:
         MGTK_CALL MGTK::GetEvent, event_params
         bne     exit
         lda     event_params::kind
-        cmp     #MGTK::event_kind_button_down
+        cmp     #MGTK::EventKind::button_down
         beq     handle_down
-        cmp     #MGTK::event_kind_key_down
+        cmp     #MGTK::EventKind::key_down
         beq     handle_key
+
+        jsr     do_joystick
+
         jmp     input_loop
 .endproc
 
@@ -458,11 +541,11 @@ unchecked_bitmap:
         cmp     winfo::window_id
         bne     input_loop
         lda     findwindow_params::which_area
-        cmp     #MGTK::area_close_box
+        cmp     #MGTK::Area::close_box
         beq     handle_close
-        cmp     #MGTK::area_dragbar
+        cmp     #MGTK::Area::dragbar
         beq     handle_drag
-        cmp     #MGTK::area_content
+        cmp     #MGTK::Area::content
         beq     handle_click
         jmp     input_loop
 .endproc
@@ -643,6 +726,8 @@ mask:   .byte   1<<0, 1<<1, 1<<2, 1<<3, 1<<4, 1<<5, 1<<6, 1<<7
         asl                     ; *= 2
         tay
 
+        ;; TODO: Enable property
+.if 0
         sta     RAMWRTOFF        ; Store into main
         lda     dblclick_values,y
         sta     dblclick_counter_lo
@@ -650,6 +735,7 @@ mask:   .byte   1<<0, 1<<1, 1<<2, 1<<3, 1<<4, 1<<5, 1<<6, 1<<7
         lda     dblclick_values,y
         sta     dblclick_counter_hi
         sta     RAMWRTON
+.endif
 
         MGTK_CALL MGTK::GetWinPort, winport_params
         MGTK_CALL MGTK::SetPort, grafport
@@ -792,15 +878,15 @@ loop:   lda     counter
         bmi     exit            ; moved past delta; no double-click
 
         lda     event_kind
-        cmp     #MGTK::event_kind_no_event
+        cmp     #MGTK::EventKind::no_event
         beq     loop
-        cmp     #MGTK::event_kind_drag
+        cmp     #MGTK::EventKind::drag
         beq     loop
-        cmp     #MGTK::event_kind_button_up
+        cmp     #MGTK::EventKind::button_up
         bne     :+
         jsr     get_event
         jmp     loop
-:       cmp     #MGTK::event_kind_button_down
+:       cmp     #MGTK::EventKind::button_down
         bne     exit
 
         jsr     get_event
@@ -878,7 +964,7 @@ notpencopy:     .byte   MGTK::notpencopy
 .proc draw_window
         ;; Defer if content area is not visible
         MGTK_CALL MGTK::GetWinPort, winport_params
-        cmp     #MGTK::error_window_obscured
+        cmp     #MGTK::Error::window_obscured
         bne     :+
         rts
 :
@@ -941,6 +1027,27 @@ loop:   lda     arg1,y
 
         MGTK_CALL MGTK::SetPenMode, notpencopy
         MGTK_CALL MGTK::PaintBits, dblclick_params
+
+        MGTK_CALL MGTK::SetPenSize, winfo::penwidth
+
+        ;; ==============================
+        ;; Joystick Calibration
+
+        MGTK_CALL MGTK::MoveTo, joystick_label_pos
+        MGTK_CALL MGTK::DrawText, str_calibrate_joystick
+
+        MGTK_CALL MGTK::SetPenMode, notpencopy
+        MGTK_CALL MGTK::PaintBits, joystick_params
+
+        MGTK_CALL MGTK::SetPenMode, notpencopy
+        MGTK_CALL MGTK::FrameRect, joy_disp_frame_rect
+
+        MGTK_CALL MGTK::MoveTo, joy_btn0_lpos
+        MGTK_CALL MGTK::DrawText, joy_btn0_label
+        MGTK_CALL MGTK::MoveTo, joy_btn1_lpos
+        MGTK_CALL MGTK::DrawText, joy_btn1_label
+
+        copy    #0, last_joy_valid_flag
 
 done:   MGTK_CALL MGTK::ShowCursor
         rts
@@ -1219,7 +1326,138 @@ pattern_abrick:
 
 ;;; ============================================================
 
+.proc do_joystick
+        joy_x := joy_marker::viewloc::xcoord
+        joy_y := joy_marker::viewloc::ycoord
+
+
+        jsr     read_paddles
+
+        lda     pdl0
+        lsr                     ; clamp range to 0...63
+        lsr
+        sta     joy_x
+
+        lda     pdl1
+        lsr                     ; clamp range to 0...31
+        lsr
+        lsr
+        sta     joy_y
+
+        ;; Changed? (or first time through)
+        lda     last_joy_valid_flag
+        beq     changed
+        lda     joy_x
+        cmp     last_x
+        bne     changed
+        lda     joy_y
+        cmp     last_y
+        bne     changed
+        rts
+
+changed:
+        lda     joy_x
+        sta     last_x
+        lda     joy_y
+        sta     last_y
+        lda     #$80
+        sta     last_joy_valid_flag
+
+        lda     #0
+        sta     joy_x+1
+        sub16   joy_x, #31, joy_x
+        add16   joy_x, #joy_disp_x, joy_x
+
+        lda     #0
+        sta     joy_y+1
+        sub16   joy_y, #15, joy_y
+        add16   joy_y, #joy_disp_y, joy_y
+
+        ;; Defer if content area is not visible
+        MGTK_CALL MGTK::GetWinPort, winport_params
+        cmp     #MGTK::Error::window_obscured
+        beq     done
+
+
+        MGTK_CALL MGTK::GetWinPort, winport_params
+        MGTK_CALL MGTK::SetPort, grafport
+        MGTK_CALL MGTK::HideCursor
+
+        MGTK_CALL MGTK::SetPenMode, pencopy
+        MGTK_CALL MGTK::PaintRect, joy_disp_rect
+
+        MGTK_CALL MGTK::SetPenMode, notpencopy
+
+        MGTK_CALL MGTK::PaintBits, joy_marker
+
+        copy16  joy_btn0::xcoord, checked_params::viewloc::xcoord
+        copy16  joy_btn0::ycoord, checked_params::viewloc::ycoord
+        MGTK_CALL MGTK::PaintBits, checked_params
+
+        copy16  joy_btn1::xcoord, checked_params::viewloc::xcoord
+        copy16  joy_btn1::ycoord, checked_params::viewloc::ycoord
+        MGTK_CALL MGTK::PaintBits, checked_params
+
+        MGTK_CALL MGTK::ShowCursor
+done:   rts
+
+last_x: .byte   0
+last_y: .byte   0
+
+pencopy:        .byte   MGTK::pencopy
+notpencopy:     .byte   MGTK::notpencopy
+
+.endproc
+
+last_joy_valid_flag:
+        .byte   0
+
+;;; ============================================================
+
+pdl0:   .byte   0
+pdl1:   .byte   0
+
+;;; TODO: all 4
+
+.proc read_paddles
+        lda     #0
+        sta     pdl0
+        sta     pdl1
+
+        ldx     #0
+        jsr     pread
+        sty     pdl0
+
+        ldx     #1
+        jsr     pread
+        sty     pdl1
+
+        rts
+
+.proc pread
+        ;; Let any previous timer reset
+:       lda     PADDL0,x
+        bmi     :-
+
+        ;; Read paddle
+        lda     PTRIG
+        ldy     #0
+        nop
+        nop
+:       lda     PADDL0,X
+        bpl     done
+        iny
+        bne     :-
+done:   rts
+.endproc
+
+.endproc
+
+;;; ============================================================
+
 da_end  = *
 .assert * < $1B00, error, "DA too big"
         ;; I/O Buffer starts at MAIN $1C00
         ;; ... but icon tables start at AUX $1B00
+
+;;; ============================================================
