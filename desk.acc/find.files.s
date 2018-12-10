@@ -79,10 +79,10 @@ str_title:
 
 .proc winfo
 window_id:      .byte   da_window_id
-options:        .byte   MGTK::option_dialog_box
+options:        .byte   MGTK::Option::dialog_box
 title:          .addr   str_title
-hscroll:        .byte   MGTK::scroll_option_none
-vscroll:        .byte   MGTK::scroll_option_none
+hscroll:        .byte   MGTK::Scroll::option_none
+vscroll:        .byte   MGTK::Scroll::option_none
 hthumbmax:      .byte   0
 hthumbpos:      .byte   0
 vthumbmax:      .byte   0
@@ -111,10 +111,10 @@ nextwinfo:      .addr   0
 
 .proc winfo_results
 window_id:      .byte   results_window_id
-options:        .byte   MGTK::option_dialog_box
+options:        .byte   MGTK::Option::dialog_box
 title:          .addr   0
-hscroll:        .byte   MGTK::scroll_option_none
-vscroll:        .byte   MGTK::scroll_option_normal
+hscroll:        .byte   MGTK::Scroll::option_none
+vscroll:        .byte   MGTK::Scroll::option_normal
 hthumbmax:      .byte   0
 hthumbpos:      .byte   0
 vthumbmax:      .byte   max_rows - results_rows
@@ -146,10 +146,10 @@ nextwinfo:      .addr   0
 
 .proc event_params
 kind:  .byte   0
-;;; event_kind_key_down
+;;; EventKind::key_down
 key             := *
 modifiers       := * + 1
-;;; event_kind_update
+;;; EventKind::update
 window_id       := *
 ;;; otherwise
 xcoord          := *
@@ -172,7 +172,7 @@ which_part:     .byte   0
 .endproc
 
 .proc trackthumb_params
-which_ctl:      .byte   MGTK::ctl_vertical_scroll_bar
+which_ctl:      .byte   MGTK::Ctl::vertical_scroll_bar
 mousex:         .word   0
 mousey:         .word   0
 thumbpos:       .byte   0
@@ -180,7 +180,7 @@ thumbmoved:     .byte   0
 .endproc
 
 .proc updatethumb_params
-which_ctl:      .byte   MGTK::ctl_vertical_scroll_bar
+which_ctl:      .byte   MGTK::Ctl::vertical_scroll_bar
 thumbpos:       .byte   0
 .endproc
 
@@ -293,13 +293,13 @@ top_row:        .byte   0
         MGTK_CALL MGTK::GetEvent, event_params
         bne     exit
         lda     event_params::kind
-        cmp     #MGTK::event_kind_button_down
+        cmp     #MGTK::EventKind::button_down
         bne     :+
         jmp     handle_down
-:       cmp     #MGTK::event_kind_key_down
+:       cmp     #MGTK::EventKind::key_down
         bne     :+
         jmp     handle_key
-:       cmp     #MGTK::event_kind_no_event
+:       cmp     #MGTK::EventKind::no_event
         bne     :+
         jmp     handle_no_event
 :       jmp     input_loop
@@ -618,7 +618,7 @@ done_concat:
         copy16  event_params::ycoord, findwindow_params::mousey
         MGTK_CALL MGTK::FindWindow, findwindow_params
         lda     findwindow_params::which_area
-        cmp     #MGTK::area_content
+        cmp     #MGTK::Area::content
         bne     done
         lda     findwindow_params::window_id
         cmp     #results_window_id
@@ -646,7 +646,7 @@ results:
         copy16  event_params::ycoord, findcontrol_params::mousey
         MGTK_CALL MGTK::FindControl, findcontrol_params
         lda     findcontrol_params::which_ctl
-        cmp     #MGTK::ctl_vertical_scroll_bar
+        cmp     #MGTK::Ctl::vertical_scroll_bar
         bne     done
 
         jmp     handle_scroll
@@ -667,7 +667,7 @@ results:
         lda     findcontrol_params::which_part
 
         ;; scroll up by one line
-        cmp     #MGTK::part_up_arrow
+        cmp     #MGTK::Part::up_arrow
         bne     try_down
         lda     top_row
         cmp     #0
@@ -678,7 +678,7 @@ results:
 
         ;; scroll down by one line
 try_down:
-        cmp     #MGTK::part_down_arrow
+        cmp     #MGTK::Part::down_arrow
         bne     try_pgup
         lda     top_row
         cmp     max_top
@@ -689,7 +689,7 @@ try_down:
 
         ;; scroll up by one page
 try_pgup:
-        cmp     #MGTK::part_page_up
+        cmp     #MGTK::Part::page_up
         bne     try_pgdn
         lda     top_row
         cmp     #page_size
@@ -702,7 +702,7 @@ try_pgup:
 
         ;; scroll down by one page
 try_pgdn:
-        cmp     #MGTK::part_page_down
+        cmp     #MGTK::Part::page_down
         bne     try_thumb
         lda     top_row
         clc
@@ -713,7 +713,7 @@ try_pgdn:
         jmp     store
 
 try_thumb:
-        cmp     #MGTK::part_thumb
+        cmp     #MGTK::Part::thumb
         beq     :+
         jmp     done
 :       copy16  event_params::xcoord, trackthumb_params::mousex
@@ -774,7 +774,7 @@ line_height:    .word   0
 
 loop:   MGTK_CALL MGTK::GetEvent, event_params
         lda     event_params::kind
-        cmp     #MGTK::event_kind_button_up
+        cmp     #MGTK::EventKind::button_up
         beq     exit
 
         jsr     test_rect
