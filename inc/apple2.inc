@@ -29,6 +29,8 @@ SHADOW          := $C035        ; IIgs - inhibit shadowing
 AN3_ON          := $C05F        ; AppleColor Adapter Card / Le Chat Mauve
 AN3_OFF         := $C05E
 
+BUTN2           := $C063
+
 RAMWORKS_BANK   := $C071        ; RAMWorks bank selection ???
 
 HR1_ON          := $C0B3
