@@ -569,7 +569,7 @@ joystick_bitmap:
         copy16  event_params::xcoord, dragwindow_params::dragx
         copy16  event_params::ycoord, dragwindow_params::dragy
         MGTK_CALL MGTK::DragWindow, dragwindow_params
-common: lda     dragwindow_params::moved
+common: bit     dragwindow_params::moved
         bpl     :+
 
         ;; Draw DeskTop's windows
@@ -646,18 +646,16 @@ common: lda     dragwindow_params::moved
         lda     pattern_index
         cmp     #pattern_count
         bcc     :+
-        lda     #0
-:       sta     pattern_index
-        jmp     update_pattern
+        copy    #0, pattern_index
+:       jmp     update_pattern
 .endproc
 
 .proc handle_larr_click
         dec     pattern_index
         lda     pattern_index
         bpl     :+
-        lda     #pattern_count-1
-:       sta     pattern_index
-        jmp     update_pattern
+        copy    #pattern_count-1, pattern_index
+:       jmp     update_pattern
 .endproc
 
 .proc update_pattern
@@ -732,11 +730,9 @@ mask:   .byte   1<<0, 1<<1, 1<<2, 1<<3, 1<<4, 1<<5, 1<<6, 1<<7
         ;; TODO: Enable property
 .if 0
         sta     RAMWRTOFF        ; Store into main
-        lda     dblclick_values,y
-        sta     dblclick_counter_lo
+        copy    dblclick_values,y, dblclick_counter_lo
         iny
-        lda     dblclick_values,y
-        sta     dblclick_counter_hi
+        copy    dblclick_values,y, dblclick_counter_hi
         sta     RAMWRTON
 .endif
 
@@ -762,10 +758,8 @@ dblclick_counter_hi := $8610
         dblclick_machine_type := $D2AB
 
         ;; Compute counter values
-        lda     dblclick_machine_type
-        sta     dblclick_value1
-        lda     #0
-        sta     dblclick_value1+1
+        copy    dblclick_machine_type, dblclick_value1
+        copy    #0, dblclick_value1+1
         asl16   dblclick_value1 ; Normal is 2x machine_type (good for 1MHz)
         copy16  dblclick_value1, dblclick_value2
         asl16   dblclick_value2
@@ -785,24 +779,19 @@ dblclick_counter_hi := $8610
         ;; Yes, patch it...
         sta     RAMWRTOFF
         ldy     #dblclick_routine_len - 1
-:       lda     routine,y
-        sta     dblclick_routine,y
+:       copy    routine,y, dblclick_routine,y
         dey
         bpl     :-
         ;; And patch the patch with the default value
-        lda     dblclick_value1
-        sta     dblclick_counter_lo
-        lda     dblclick_value1+1
-        sta     dblclick_counter_hi
+        copy    dblclick_value1, dblclick_counter_lo
+        copy    dblclick_value1+1, dblclick_counter_hi
         sta     RAMWRTON
 
 done_patch:
         ;; Load current from main
         sta     RAMRDOFF
-        lda     dblclick_counter_lo
-        sta     current_counter
-        lda     dblclick_counter_hi
-        sta     current_counter+1
+        copy    dblclick_counter_lo, current_counter
+        copy    dblclick_counter_hi, current_counter+1
         sta     RAMRDON
 
         ;; TODO: Use a loop
@@ -813,8 +802,7 @@ done_patch:
         cmp     dblclick_value1+1
         bne     :+
 
-        lda     #1
-        sta     dblclick_speed
+        copy    #1, dblclick_speed
         rts
 
 :       lda     current_counter
@@ -824,8 +812,7 @@ done_patch:
         cmp     dblclick_value2+1
         bne     :+
 
-        lda     #2
-        sta     dblclick_speed
+        copy    #2, dblclick_speed
         rts
 
 :       lda     current_counter
@@ -835,12 +822,10 @@ done_patch:
         cmp     dblclick_value3+1
         bne     :+
 
-        lda     #3
-        sta     dblclick_speed
+        copy    #3, dblclick_speed
         rts
 
-:       lda     #0
-        sta     dblclick_speed
+:       copy    #0, dblclick_speed
         rts
 
 
@@ -919,8 +904,7 @@ current_counter:
 
 .proc init_pattern
         ldy     #7
-:       lda     desktop_pattern,y
-        sta     pattern,y
+:       copy    desktop_pattern,y, pattern,y
         dey
         bpl     :-
         rts
@@ -929,8 +913,7 @@ current_counter:
 .proc handle_pattern_click
         ;; TODO: Replace this horrible hack
         ldy     #7
-:       lda     pattern,y
-        sta     desktop_pattern,y
+:       copy    pattern,y, desktop_pattern,y
         dey
         bpl     :-
 
@@ -1004,8 +987,7 @@ notpencopy:     .byte   MGTK::notpencopy
 .macro copy32 arg1, arg2
         .scope
         ldy     #3
-loop:   lda     arg1,y
-        sta     arg2,y
+loop:   copy    arg1,y, arg2,y
         dey
         bpl     loop
         .endscope
@@ -1118,8 +1100,7 @@ bitpos:    DEFINE_POINT    0, 0, bitpos
 yloop:  copy    #0, xpos
         add16   fatbits_rect::x1, #1, bitpos::xcoord
         ldy     ypos
-        lda     pattern, y
-        sta     row
+        copy    pattern,y, row
 
 xloop:  ror     row
         bcc     zero
