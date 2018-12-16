@@ -1331,77 +1331,74 @@ pattern_abrick:
 
 ;;; ============================================================
 
-.proc do_joystick
-        joy_x := joy_marker::viewloc::xcoord
-        joy_y := joy_marker::viewloc::ycoord
+        ;; TODO: Read and visualize all 4 paddles.
+        num_paddles = 2
 
+.struct InputState
+        pdl0    .byte
+        pdl1    .byte
+        pdl2    .byte
+        pdl3    .byte
+
+        butn0   .byte
+        butn1   .byte
+        butn2   .byte
+.endstruct
+
+.proc do_joystick
 
         jsr     read_paddles
 
-        lda     pdl0
+        ;; TODO: Visualize all 4 paddles.
+
+        ldx     #num_paddles-1
+:       lda     pdl0,x
         lsr                     ; clamp range to 0...63
         lsr
-        sta     joy_x
+        sta     curr+InputState::pdl0,x
+        dex
+        bpl     :-
 
-        lda     pdl1
-        lsr                     ; clamp range to 0...31
-        lsr
-        lsr
-        sta     joy_y
+        lsr     curr+InputState::pdl1 ; clamp Y to 0...31 (due to pixel aspect ratio)
 
         lda     BUTN0
         and     #$80            ; only care about msb
-        sta     butn0
+        sta     curr+InputState::butn0
 
         lda     BUTN1
         and     #$80            ; only care about msb
-        sta     butn1
+        sta     curr+InputState::butn1
 
         lda     BUTN2
         and     #$80            ; only care about msb
-        sta     butn2
+        sta     curr+InputState::butn2
 
         ;; Changed? (or first time through)
         lda     last_joy_valid_flag
         beq     changed
-        lda     joy_x
-        cmp     last_x
+
+        ldx     #.sizeof(InputState)-1
+:       lda     curr,x
+        cmp     last,x
         bne     changed
-        lda     joy_y
-        cmp     last_y
-        bne     changed
-        lda     butn0
-        cmp     last_b0
-        bne     changed
-        lda     butn1
-        cmp     last_b1
-        bne     changed
-        lda     butn2
-        cmp     last_b2
-        bne     changed
+        dex
+        bpl     :-
+
         rts
 
 changed:
-        lda     joy_x
-        sta     last_x
-        lda     joy_y
-        sta     last_y
-        lda     butn0
-        sta     last_b0
-        lda     butn1
-        sta     last_b1
-        lda     butn2
-        sta     last_b2
-        lda     #$80
-        sta     last_joy_valid_flag
+        COPY_STRUCT InputState, curr, last
+        copy    #$80, last_joy_valid_flag
 
-        lda     #0
-        sta     joy_x+1
+        joy_x := joy_marker::viewloc::xcoord
+        copy    curr+InputState::pdl0, joy_x
+        copy    #0, joy_x+1
         sub16   joy_x, #31, joy_x
         add16   joy_x, #joy_disp_x, joy_x
 
-        lda     #0
-        sta     joy_y+1
+        joy_y := joy_marker::viewloc::ycoord
+        copy    curr+InputState::pdl1, joy_y
+        copy    #0, joy_y+1
         sub16   joy_y, #15, joy_y
         add16   joy_y, #joy_disp_y, joy_y
 
@@ -1423,7 +1420,7 @@ changed:
         MGTK_CALL MGTK::PaintBits, joy_marker
 
 draw_b0:
-        lda     butn0
+        lda     curr+InputState::butn0
         bne     :+
         copy16  joy_btn0::xcoord, unchecked_params::viewloc::xcoord
         copy16  joy_btn0::ycoord, unchecked_params::viewloc::ycoord
@@ -1435,7 +1432,7 @@ draw_b0:
         MGTK_CALL MGTK::PaintBits, checked_params
 
 draw_b1:
-        lda     butn1
+        lda     curr+InputState::butn1
         bne     :+
         copy16  joy_btn1::xcoord, unchecked_params::viewloc::xcoord
         copy16  joy_btn1::ycoord, unchecked_params::viewloc::ycoord
@@ -1447,7 +1444,7 @@ draw_b1:
         MGTK_CALL MGTK::PaintBits, checked_params
 
 draw_b2:
-        lda     butn2
+        lda     curr+InputState::butn2
         bne     :+
         copy16  joy_btn2::xcoord, unchecked_params::viewloc::xcoord
         copy16  joy_btn2::ycoord, unchecked_params::viewloc::ycoord
@@ -1462,15 +1459,8 @@ done_buttons:
         MGTK_CALL MGTK::ShowCursor
 done:   rts
 
-butn0:  .byte   0
-butn1:  .byte   0
-butn2:  .byte   0
-
-last_x: .byte   0
-last_y: .byte   0
-last_b0:.byte   0
-last_b1:.byte   0
-last_b2:.byte   0
+curr:   .tag InputState
+last:   .tag InputState
 
 pencopy:        .byte   MGTK::pencopy
 notpencopy:     .byte   MGTK::notpencopy
@@ -1484,21 +1474,16 @@ last_joy_valid_flag:
 
 pdl0:   .byte   0
 pdl1:   .byte   0
-
-;;; TODO: all 4
+pdl2:   .byte   0
+pdl3:   .byte   0
 
 .proc read_paddles
-        lda     #0
-        sta     pdl0
-        sta     pdl1
-
-        ldx     #0
-        jsr     pread
-        sty     pdl0
-
-        ldx     #1
-        jsr     pread
-        sty     pdl1
+        ldx     #num_paddles - 1
+:       jsr     pread
+        tya
+        sta     pdl0,x
+        dex
+        bpl     :-
 
         rts
 
