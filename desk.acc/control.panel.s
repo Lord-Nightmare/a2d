@@ -185,6 +185,49 @@ textback:       .byte   0
 textfont:       .addr   0
 .endproc
 
+
+;;; ============================================================
+;;; Common Resources
+
+radio_button_w = 15
+radio_button_h = 7
+
+.proc checked_params
+viewloc:        DEFINE_POINT 0, 0, viewloc
+mapbits:        .addr   checked_bitmap
+mapwidth:       .byte   3
+reserved:       .byte   0
+cliprect:       DEFINE_RECT 0, 0, radio_button_w, radio_button_h
+.endproc
+
+checked_bitmap:
+        .byte   px(%0000111),px(%1111100),px(%0000000)
+        .byte   px(%0011100),px(%0000111),px(%0000000)
+        .byte   px(%1110001),px(%1110001),px(%1100000)
+        .byte   px(%1100111),px(%1111100),px(%1100000)
+        .byte   px(%1100111),px(%1111100),px(%1100000)
+        .byte   px(%1110001),px(%1110001),px(%1100000)
+        .byte   px(%0011100),px(%0000111),px(%0000000)
+        .byte   px(%0000111),px(%1111100),px(%0000000)
+
+.proc unchecked_params
+viewloc:        DEFINE_POINT 0, 0, viewloc
+mapbits:        .addr   unchecked_bitmap
+mapwidth:       .byte   3
+reserved:       .byte   0
+cliprect:       DEFINE_RECT 0, 0, radio_button_w, radio_button_h
+.endproc
+
+unchecked_bitmap:
+        .byte   px(%0000111),px(%1111100),px(%0000000)
+        .byte   px(%0011100),px(%0000111),px(%0000000)
+        .byte   px(%1110000),px(%0000001),px(%1100000)
+        .byte   px(%1100000),px(%0000000),px(%1100000)
+        .byte   px(%1100000),px(%0000000),px(%1100000)
+        .byte   px(%1110000),px(%0000001),px(%1100000)
+        .byte   px(%0011100),px(%0000111),px(%0000000)
+        .byte   px(%0000111),px(%1111100),px(%0000000)
+
 ;;; ============================================================
 ;;; Desktop Pattern Editor Resources
 
@@ -310,14 +353,12 @@ dblclick_arrow_pos5:
 dblclick_arrow_pos6:
         DEFINE_POINT dblclick_x + 155, dblclick_y + 23
 
-dblclick_button_w := 15
-dblclick_button_h := 7
 dblclick_button_rect1:
-        DEFINE_RECT dblclick_x + 175, dblclick_y + 25, dblclick_x + 175 + dblclick_button_w, dblclick_y + 25 + dblclick_button_h
+        DEFINE_RECT dblclick_x + 175, dblclick_y + 25, dblclick_x + 175 + radio_button_w, dblclick_y + 25 + radio_button_h
 dblclick_button_rect2:
-        DEFINE_RECT dblclick_x + 130, dblclick_y + 25, dblclick_x + 130 + dblclick_button_w, dblclick_y + 25 + dblclick_button_h
+        DEFINE_RECT dblclick_x + 130, dblclick_y + 25, dblclick_x + 130 + radio_button_w, dblclick_y + 25 + radio_button_h
 dblclick_button_rect3:
-        DEFINE_RECT dblclick_x + 85, dblclick_y + 25, dblclick_x + 85 + dblclick_button_w, dblclick_y + 25 + dblclick_button_h
+        DEFINE_RECT dblclick_x +  85, dblclick_y + 25, dblclick_x +  85 + radio_button_w, dblclick_y + 25 + radio_button_h
 
 dblclick_bitmap:
         .byte   px(%0000000),px(%0000000),px(%0000000),px(%0000011),px(%0000000),px(%0000000),px(%0000000),px(%0000000)
@@ -373,43 +414,6 @@ darr_bitmap:
         .byte   px(%0000111),px(%1111110),px(%0000000)
         .byte   px(%0000001),px(%1111000),px(%0000000)
         .byte   px(%0000000),px(%0100000),px(%0000000)
-
-.proc checked_params
-viewloc:        DEFINE_POINT 0, 0, viewloc
-mapbits:        .addr   checked_bitmap
-mapwidth:       .byte   3
-reserved:       .byte   0
-cliprect:       DEFINE_RECT 0, 0, dblclick_button_w, dblclick_button_h
-.endproc
-
-checked_bitmap:
-        .byte   px(%0000111),px(%1111100),px(%0000000)
-        .byte   px(%0011100),px(%0000111),px(%0000000)
-        .byte   px(%1110001),px(%1110001),px(%1100000)
-        .byte   px(%1100111),px(%1111100),px(%1100000)
-        .byte   px(%1100111),px(%1111100),px(%1100000)
-        .byte   px(%1110001),px(%1110001),px(%1100000)
-        .byte   px(%0011100),px(%0000111),px(%0000000)
-        .byte   px(%0000111),px(%1111100),px(%0000000)
-
-
-.proc unchecked_params
-viewloc:        DEFINE_POINT 0, 0, viewloc
-mapbits:        .addr   unchecked_bitmap
-mapwidth:       .byte   3
-reserved:       .byte   0
-cliprect:       DEFINE_RECT 0, 0, dblclick_button_w, dblclick_button_h
-.endproc
-
-unchecked_bitmap:
-        .byte   px(%0000111),px(%1111100),px(%0000000)
-        .byte   px(%0011100),px(%0000111),px(%0000000)
-        .byte   px(%1110000),px(%0000001),px(%1100000)
-        .byte   px(%1100000),px(%0000000),px(%1100000)
-        .byte   px(%1100000),px(%0000000),px(%1100000)
-        .byte   px(%1110000),px(%0000001),px(%1100000)
-        .byte   px(%0011100),px(%0000111),px(%0000000)
-        .byte   px(%0000111),px(%1111100),px(%0000000)
 
 ;;; ============================================================
 ;;; Joystick Calibration Resources
@@ -513,12 +517,15 @@ ipblink_slow_pos:
 ipblink_fast_pos:
         DEFINE_POINT ipblink_x + 140 + 4 + 4, ipblink_y + 16 + 5 + 12 + 1
 
-ipblink_btn1_pos:
-        DEFINE_POINT ipblink_x + 110 + 2, ipblink_y + 16
-ipblink_btn2_pos:
-        DEFINE_POINT ipblink_x + 130 + 2, ipblink_y + 16
-ipblink_btn3_pos:
-        DEFINE_POINT ipblink_x + 150 + 2, ipblink_y + 16
+ipblink_btn1_rect:
+        DEFINE_RECT ipblink_x + 110 + 2, ipblink_y + 16, ipblink_x + 110 + 2 + radio_button_w, ipblink_y + 16 + radio_button_h
+ipblink_btn2_rect:
+        DEFINE_RECT ipblink_x + 130 + 2, ipblink_y + 16, ipblink_x + 110 + 2 + radio_button_w, ipblink_y + 16 + radio_button_h
+ipblink_btn3_rect:
+        DEFINE_RECT ipblink_x + 150 + 2, ipblink_y + 16, ipblink_x + 110 + 2 + radio_button_w, ipblink_y + 16 + radio_button_h
+
+
+
 
 .proc ipblink_bitmap_params
 viewloc:        DEFINE_POINT ipblink_x + 120 - 1, ipblink_y
@@ -1106,12 +1113,17 @@ loop:   copy    arg1,y, arg2,y
         MGTK_CALL MGTK::MoveTo, ipblink_fast_pos
         MGTK_CALL MGTK::DrawText, str_ipblink_fast
 
-        COPY_STRUCT MGTK::Point, ipblink_btn1_pos, unchecked_params::viewloc
-        MGTK_CALL MGTK::PaintBits, unchecked_params
-        COPY_STRUCT MGTK::Point, ipblink_btn2_pos, unchecked_params::viewloc
-        MGTK_CALL MGTK::PaintBits, unchecked_params
-        COPY_STRUCT MGTK::Point, ipblink_btn3_pos, checked_params::viewloc
-        MGTK_CALL MGTK::PaintBits, checked_params
+        ldax    #ipblink_btn1_rect
+        ldy     #1
+        jsr     draw_radio_button
+
+        ldax    #ipblink_btn2_rect
+        ldy     #1
+        jsr     draw_radio_button
+
+        ldax    #ipblink_btn3_rect
+        ldy     #0
+        jsr     draw_radio_button
 
 done:   MGTK_CALL MGTK::ShowCursor
         rts
@@ -1121,24 +1133,33 @@ done:   MGTK_CALL MGTK::ShowCursor
 .proc draw_dblclick_buttons
         MGTK_CALL MGTK::SetPenMode, notpencopy
 
+        lda     dblclick_speed
+        cmp     #1
+        php
         ldax    #dblclick_button_rect1
-        ldy     #1
-        jsr     draw_dblclick_button
+        plp
+        jsr     draw_radio_button
+
+        lda     dblclick_speed
+        cmp     #2
+        php
         ldax    #dblclick_button_rect2
-        ldy     #2
-        jsr     draw_dblclick_button
+        plp
+        jsr     draw_radio_button
+
+        lda     dblclick_speed
+        cmp     #3
+        php
         ldax    #dblclick_button_rect3
-        ldy     #3
-        jsr     draw_dblclick_button
-        rts
+        plp
+        jsr     draw_radio_button
 .endproc
 
-;;; A,X = pos ptr, Y = selected index (1,2,3)
-.proc draw_dblclick_button
+;;; A,X = pos ptr, Z = checked
+.proc draw_radio_button
         ptr := $06
 
         stax    ptr
-        cpy     dblclick_speed
         beq     checked
 
 unchecked:
@@ -1477,36 +1498,20 @@ changed:
 
         MGTK_CALL MGTK::PaintBits, joy_marker
 
-draw_b0:
-        lda     curr+InputState::butn0
-        bne     :+
-        COPY_STRUCT MGTK::Point, joy_btn0, unchecked_params::viewloc
-        MGTK_CALL MGTK::PaintBits, unchecked_params
-        jmp     draw_b1
-:
-        COPY_STRUCT MGTK::Point, joy_btn0, checked_params::viewloc
-        MGTK_CALL MGTK::PaintBits, checked_params
+        ldax    #joy_btn0
+        ldy     curr+InputState::butn0
+        cpy     #$80
+        jsr     draw_radio_button
 
-draw_b1:
-        lda     curr+InputState::butn1
-        bne     :+
-        COPY_STRUCT MGTK::Point, joy_btn1, unchecked_params::viewloc
-        MGTK_CALL MGTK::PaintBits, unchecked_params
-        jmp     draw_b2
-:
-        COPY_STRUCT MGTK::Point, joy_btn1, checked_params::viewloc
-        MGTK_CALL MGTK::PaintBits, checked_params
+        ldax    #joy_btn1
+        ldy     curr+InputState::butn1
+        cpy     #$80
+        jsr     draw_radio_button
 
-draw_b2:
-        lda     curr+InputState::butn2
-        bne     :+
-        COPY_STRUCT MGTK::Point, joy_btn2, unchecked_params::viewloc
-        MGTK_CALL MGTK::PaintBits, unchecked_params
-        jmp     done_buttons
-:
-        COPY_STRUCT MGTK::Point, joy_btn2, checked_params::viewloc
-        MGTK_CALL MGTK::PaintBits, checked_params
-done_buttons:
+        ldax    #joy_btn2
+        ldy     curr+InputState::butn2
+        cpy     #$80
+        jsr     draw_radio_button
 
         MGTK_CALL MGTK::ShowCursor
 done:   rts
