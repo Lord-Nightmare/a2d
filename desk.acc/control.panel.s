@@ -489,7 +489,59 @@ joystick_bitmap:
         .byte   px(%1100000),px(%0000000),px(%0000000),px(%0000000),px(%0000000),px(%0110000)
         .byte   px(%0111111),px(%1111111),px(%1111111),px(%1111111),px(%1111111),px(%1100000)
 
+;;; ============================================================
+;;; IP Blink Speed Resources
 
+ipblink_x := 210
+ipblink_y := 65
+
+str_ipblink_label1:
+        DEFINE_STRING "Rate of Insertion"
+str_ipblink_label2:
+        DEFINE_STRING "Point Blinking"
+str_ipblink_slow:
+        DEFINE_STRING "Slow"
+str_ipblink_fast:
+        DEFINE_STRING "Fast"
+
+ipblink_label1_pos:
+        DEFINE_POINT ipblink_x, ipblink_y + 11
+ipblink_label2_pos:
+        DEFINE_POINT ipblink_x, ipblink_y + 10 + 11
+ipblink_slow_pos:
+        DEFINE_POINT ipblink_x + 110 - 4 + 2, ipblink_y + 16 + 5 + 12 + 1
+ipblink_fast_pos:
+        DEFINE_POINT ipblink_x + 140 + 4 + 4, ipblink_y + 16 + 5 + 12 + 1
+
+ipblink_btn1_pos:
+        DEFINE_POINT ipblink_x + 110 + 2, ipblink_y + 16
+ipblink_btn2_pos:
+        DEFINE_POINT ipblink_x + 130 + 2, ipblink_y + 16
+ipblink_btn3_pos:
+        DEFINE_POINT ipblink_x + 150 + 2, ipblink_y + 16
+
+.proc ipblink_bitmap_params
+viewloc:        DEFINE_POINT ipblink_x + 120 - 1, ipblink_y
+mapbits:        .addr   ipblink_bitmap
+mapwidth:       .byte   6
+reserved:       .byte   0
+cliprect:       DEFINE_RECT 0, 0, 37, 12
+.endproc
+
+ipblink_bitmap:
+        .byte   px(%0000110),px(%0000000),px(%0000001),px(%1000000),px(%0000000),px(%0110000)
+        .byte   px(%0000000),px(%0000000),px(%0000001),px(%1000000),px(%0000000),px(%0000000)
+        .byte   px(%0000000),px(%0110000),px(%0000001),px(%1000000),px(%0000110),px(%0000000)
+        .byte   px(%0000000),px(%0000000),px(%0000001),px(%1000000),px(%0000000),px(%0000000)
+        .byte   px(%0000000),px(%0000011),px(%0000001),px(%1000000),px(%1100000),px(%0000000)
+        .byte   px(%0000000),px(%0000000),px(%0000001),px(%1000000),px(%0000000),px(%0000000)
+        .byte   px(%1100110),px(%0110011),px(%0000001),px(%1000000),px(%1100000),px(%0000000)
+        .byte   px(%0000000),px(%0000000),px(%0000001),px(%1000000),px(%0000000),px(%0000000)
+        .byte   px(%0000000),px(%0000011),px(%0000001),px(%1000000),px(%1100000),px(%0000000)
+        .byte   px(%0000000),px(%0000000),px(%0000001),px(%1000000),px(%0000000),px(%0000000)
+        .byte   px(%0000000),px(%0110000),px(%0000001),px(%1000000),px(%0000110),px(%0000000)
+        .byte   px(%0000000),px(%0000000),px(%0000001),px(%1000000),px(%0000000),px(%0000000)
+        .byte   px(%0000110),px(%0000000),px(%0000001),px(%1000000),px(%0000000),px(%0110000)
 ;;; ============================================================
 
 .proc init
@@ -1036,6 +1088,31 @@ loop:   copy    arg1,y, arg2,y
 
         copy    #0, last_joy_valid_flag
 
+        ;; ==============================
+        ;; IP Blinking
+
+        MGTK_CALL MGTK::MoveTo, ipblink_label1_pos
+        MGTK_CALL MGTK::DrawText, str_ipblink_label1
+
+        MGTK_CALL MGTK::MoveTo, ipblink_label2_pos
+        MGTK_CALL MGTK::DrawText, str_ipblink_label2
+
+        MGTK_CALL MGTK::SetPenMode, notpencopy
+        MGTK_CALL MGTK::PaintBits, ipblink_bitmap_params
+
+        MGTK_CALL MGTK::MoveTo, ipblink_slow_pos
+        MGTK_CALL MGTK::DrawText, str_ipblink_slow
+
+        MGTK_CALL MGTK::MoveTo, ipblink_fast_pos
+        MGTK_CALL MGTK::DrawText, str_ipblink_fast
+
+        COPY_STRUCT MGTK::Point, ipblink_btn1_pos, unchecked_params::viewloc
+        MGTK_CALL MGTK::PaintBits, unchecked_params
+        COPY_STRUCT MGTK::Point, ipblink_btn2_pos, unchecked_params::viewloc
+        MGTK_CALL MGTK::PaintBits, unchecked_params
+        COPY_STRUCT MGTK::Point, ipblink_btn3_pos, checked_params::viewloc
+        MGTK_CALL MGTK::PaintBits, checked_params
+
 done:   MGTK_CALL MGTK::ShowCursor
         rts
 
@@ -1403,37 +1480,31 @@ changed:
 draw_b0:
         lda     curr+InputState::butn0
         bne     :+
-        copy16  joy_btn0::xcoord, unchecked_params::viewloc::xcoord
-        copy16  joy_btn0::ycoord, unchecked_params::viewloc::ycoord
+        COPY_STRUCT MGTK::Point, joy_btn0, unchecked_params::viewloc
         MGTK_CALL MGTK::PaintBits, unchecked_params
         jmp     draw_b1
 :
-        copy16  joy_btn0::xcoord, checked_params::viewloc::xcoord
-        copy16  joy_btn0::ycoord, checked_params::viewloc::ycoord
+        COPY_STRUCT MGTK::Point, joy_btn0, checked_params::viewloc
         MGTK_CALL MGTK::PaintBits, checked_params
 
 draw_b1:
         lda     curr+InputState::butn1
         bne     :+
-        copy16  joy_btn1::xcoord, unchecked_params::viewloc::xcoord
-        copy16  joy_btn1::ycoord, unchecked_params::viewloc::ycoord
+        COPY_STRUCT MGTK::Point, joy_btn1, unchecked_params::viewloc
         MGTK_CALL MGTK::PaintBits, unchecked_params
         jmp     draw_b2
 :
-        copy16  joy_btn1::xcoord, checked_params::viewloc::xcoord
-        copy16  joy_btn1::ycoord, checked_params::viewloc::ycoord
+        COPY_STRUCT MGTK::Point, joy_btn1, checked_params::viewloc
         MGTK_CALL MGTK::PaintBits, checked_params
 
 draw_b2:
         lda     curr+InputState::butn2
         bne     :+
-        copy16  joy_btn2::xcoord, unchecked_params::viewloc::xcoord
-        copy16  joy_btn2::ycoord, unchecked_params::viewloc::ycoord
+        COPY_STRUCT MGTK::Point, joy_btn2, unchecked_params::viewloc
         MGTK_CALL MGTK::PaintBits, unchecked_params
         jmp     done_buttons
 :
-        copy16  joy_btn2::xcoord, checked_params::viewloc::xcoord
-        copy16  joy_btn2::ycoord, checked_params::viewloc::ycoord
+        COPY_STRUCT MGTK::Point, joy_btn2, checked_params::viewloc
         MGTK_CALL MGTK::PaintBits, checked_params
 done_buttons:
 
