@@ -496,6 +496,10 @@ joystick_bitmap:
 ;;; ============================================================
 ;;; IP Blink Speed Resources
 
+        ;; Selected index (1-3, or 0 for 'no match')
+ipblink_speed:
+        .byte   3
+
 ipblink_x := 210
 ipblink_y := 65
 
@@ -520,9 +524,9 @@ ipblink_fast_pos:
 ipblink_btn1_rect:
         DEFINE_RECT ipblink_x + 110 + 2, ipblink_y + 16, ipblink_x + 110 + 2 + radio_button_w, ipblink_y + 16 + radio_button_h
 ipblink_btn2_rect:
-        DEFINE_RECT ipblink_x + 130 + 2, ipblink_y + 16, ipblink_x + 110 + 2 + radio_button_w, ipblink_y + 16 + radio_button_h
+        DEFINE_RECT ipblink_x + 130 + 2, ipblink_y + 16, ipblink_x + 130 + 2 + radio_button_w, ipblink_y + 16 + radio_button_h
 ipblink_btn3_rect:
-        DEFINE_RECT ipblink_x + 150 + 2, ipblink_y + 16, ipblink_x + 110 + 2 + radio_button_w, ipblink_y + 16 + radio_button_h
+        DEFINE_RECT ipblink_x + 150 + 2, ipblink_y + 16, ipblink_x + 150 + 2 + radio_button_w, ipblink_y + 16 + radio_button_h
 
 
 
@@ -694,6 +698,24 @@ common: bit     dragwindow_params::moved
         bne     :+
         lda     #3
         jmp     handle_dblclick_click
+
+:       MGTK_CALL MGTK::InRect, ipblink_btn1_rect
+        cmp     #MGTK::inrect_inside
+        bne     :+
+        lda     #1
+        jmp     handle_ipblink_click
+
+:       MGTK_CALL MGTK::InRect, ipblink_btn2_rect
+        cmp     #MGTK::inrect_inside
+        bne     :+
+        lda     #2
+        jmp     handle_ipblink_click
+
+:       MGTK_CALL MGTK::InRect, ipblink_btn3_rect
+        cmp     #MGTK::inrect_inside
+        bne     :+
+        lda     #3
+        jmp     handle_ipblink_click
 
 :       jmp     input_loop
 .endproc
@@ -1113,17 +1135,7 @@ loop:   copy    arg1,y, arg2,y
         MGTK_CALL MGTK::MoveTo, ipblink_fast_pos
         MGTK_CALL MGTK::DrawText, str_ipblink_fast
 
-        ldax    #ipblink_btn1_rect
-        ldy     #1
-        jsr     draw_radio_button
-
-        ldax    #ipblink_btn2_rect
-        ldy     #1
-        jsr     draw_radio_button
-
-        ldax    #ipblink_btn3_rect
-        ldy     #0
-        jsr     draw_radio_button
+        jsr     draw_ipblink_buttons
 
 done:   MGTK_CALL MGTK::ShowCursor
         rts
@@ -1133,26 +1145,41 @@ done:   MGTK_CALL MGTK::ShowCursor
 .proc draw_dblclick_buttons
         MGTK_CALL MGTK::SetPenMode, notpencopy
 
-        lda     dblclick_speed
-        cmp     #1
-        php
         ldax    #dblclick_button_rect1
-        plp
+        ldy     dblclick_speed
+        cpy     #1
         jsr     draw_radio_button
 
-        lda     dblclick_speed
-        cmp     #2
-        php
         ldax    #dblclick_button_rect2
-        plp
+        ldy     dblclick_speed
+        cpy     #2
         jsr     draw_radio_button
 
-        lda     dblclick_speed
-        cmp     #3
-        php
         ldax    #dblclick_button_rect3
-        plp
+        ldy     dblclick_speed
+        cpy     #3
         jsr     draw_radio_button
+.endproc
+
+.proc draw_ipblink_buttons
+        MGTK_CALL MGTK::SetPenMode, notpencopy
+
+        ldax    #ipblink_btn1_rect
+        ldy     ipblink_speed
+        cpy     #1
+        jsr     draw_radio_button
+
+        ldax    #ipblink_btn2_rect
+        ldy     ipblink_speed
+        cpy     #2
+        jsr     draw_radio_button
+
+        ldax    #ipblink_btn3_rect
+        ldy     ipblink_speed
+        cpy     #3
+        jsr     draw_radio_button
+
+        rts
 .endproc
 
 ;;; A,X = pos ptr, Z = checked
@@ -1562,6 +1589,23 @@ done:   rts
 .endproc
 
 .endproc
+
+;;; ============================================================
+;;; IP Blink
+
+.proc handle_ipblink_click
+        sta     ipblink_speed
+
+        ;; TODO: Store
+
+        MGTK_CALL MGTK::GetWinPort, winport_params
+        MGTK_CALL MGTK::SetPort, grafport
+        MGTK_CALL MGTK::HideCursor
+        jsr     draw_ipblink_buttons
+        MGTK_CALL MGTK::ShowCursor
+        jmp     input_loop
+.endproc
+
 
 ;;; ============================================================
 
