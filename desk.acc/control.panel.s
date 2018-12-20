@@ -663,80 +663,96 @@ common: bit     dragwindow_params::moved
         MGTK_CALL MGTK::MoveTo, screentowindow_params::window
         MGTK_CALL MGTK::InRect, fatbits_rect
         cmp     #MGTK::inrect_inside
-        bne     :+
+        IF_EQ
         jmp     handle_bits_click
+        END_IF
 
-:       MGTK_CALL MGTK::InRect, larr_rect
+        MGTK_CALL MGTK::InRect, larr_rect
         cmp     #MGTK::inrect_inside
-        bne     :+
+        IF_EQ
         jmp     handle_larr_click
+        END_IF
 
-:       MGTK_CALL MGTK::InRect, rarr_rect
+        MGTK_CALL MGTK::InRect, rarr_rect
         cmp     #MGTK::inrect_inside
-        bne     :+
+        IF_EQ
         jmp     handle_rarr_click
+        END_IF
 
-:       MGTK_CALL MGTK::InRect, preview_rect
+        MGTK_CALL MGTK::InRect, preview_rect
         cmp     #MGTK::inrect_inside
-        bne     :+
+        IF_EQ
         jmp     handle_pattern_click
+        END_IF
 
-:       MGTK_CALL MGTK::InRect, dblclick_button_rect1
+        MGTK_CALL MGTK::InRect, dblclick_button_rect1
         cmp     #MGTK::inrect_inside
-        bne     :+
+        IF_EQ
         lda     #1
         jmp     handle_dblclick_click
+        END_IF
 
-:       MGTK_CALL MGTK::InRect, dblclick_button_rect2
+        MGTK_CALL MGTK::InRect, dblclick_button_rect2
         cmp     #MGTK::inrect_inside
-        bne     :+
+        IF_EQ
         lda     #2
         jmp     handle_dblclick_click
+        END_IF
 
-:       MGTK_CALL MGTK::InRect, dblclick_button_rect3
+        MGTK_CALL MGTK::InRect, dblclick_button_rect3
         cmp     #MGTK::inrect_inside
-        bne     :+
+        IF_EQ
         lda     #3
         jmp     handle_dblclick_click
+        END_IF
 
-:       MGTK_CALL MGTK::InRect, ipblink_btn1_rect
+        MGTK_CALL MGTK::InRect, ipblink_btn1_rect
         cmp     #MGTK::inrect_inside
-        bne     :+
+        IF_EQ
         lda     #1
         jmp     handle_ipblink_click
+        END_IF
 
-:       MGTK_CALL MGTK::InRect, ipblink_btn2_rect
+        MGTK_CALL MGTK::InRect, ipblink_btn2_rect
         cmp     #MGTK::inrect_inside
-        bne     :+
+        IF_EQ
         lda     #2
         jmp     handle_ipblink_click
+        END_IF
 
-:       MGTK_CALL MGTK::InRect, ipblink_btn3_rect
+        MGTK_CALL MGTK::InRect, ipblink_btn3_rect
         cmp     #MGTK::inrect_inside
-        bne     :+
+        IF_EQ
         lda     #3
         jmp     handle_ipblink_click
+        END_IF
 
-:       jmp     input_loop
+        jmp     input_loop
 .endproc
 
 ;;; ============================================================
 
 .proc handle_rarr_click
         inc     pattern_index
+
         lda     pattern_index
         cmp     #pattern_count
-        bcc     :+
+        IF_GE
         copy    #0, pattern_index
-:       jmp     update_pattern
+        END_IF
+
+        jmp     update_pattern
 .endproc
 
 .proc handle_larr_click
         dec     pattern_index
+
         lda     pattern_index
-        bpl     :+
+        IF_NEG
         copy    #pattern_count-1, pattern_index
-:       jmp     update_pattern
+        END_IF
+
+        jmp     update_pattern
 .endproc
 
 .proc update_pattern
@@ -1032,9 +1048,10 @@ notpencopy:     .byte   MGTK::notpencopy
         ;; Defer if content area is not visible
         MGTK_CALL MGTK::GetWinPort, winport_params
         cmp     #MGTK::Error::window_obscured
-        bne     :+
+        IF_EQ
         rts
-:
+        END_IF
+
         MGTK_CALL MGTK::SetPort, grafport
         MGTK_CALL MGTK::HideCursor
 
@@ -1238,23 +1255,25 @@ store:  sta     mode
         MGTK_CALL MGTK::MoveTo, bitpos
         MGTK_CALL MGTK::LineTo, bitpos
 
-next_x: inc     xpos
+        ;; next x
+        inc     xpos
         lda     xpos
         cmp     #8
-        beq     next_y
-
+        IF_NE
         add16   bitpos::xcoord, #fatbit_w, bitpos::xcoord
         jmp     xloop
+        END_IF
 
-next_y: inc     ypos
+        ;; next y
+        inc     ypos
         lda     ypos
         cmp     #8
-        beq     done
-
+        IF_NE
         add16   bitpos::ycoord, #fatbit_h, bitpos::ycoord
         jmp     yloop
+        END_IF
 
-done:   rts
+        rts
 
 xpos:   .byte   0
 ypos:   .byte   0
@@ -1511,10 +1530,11 @@ changed:
         ;; Defer if content area is not visible
         MGTK_CALL MGTK::GetWinPort, winport_params
         cmp     #MGTK::Error::window_obscured
-        bne     :+
+        IF_EQ
         rts
+        END_IF
 
-:       MGTK_CALL MGTK::GetWinPort, winport_params
+        MGTK_CALL MGTK::GetWinPort, winport_params
         MGTK_CALL MGTK::SetPort, grafport
         MGTK_CALL MGTK::HideCursor
 
