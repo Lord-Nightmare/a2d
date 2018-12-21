@@ -498,7 +498,7 @@ joystick_bitmap:
 
         ;; Selected index (1-3, or 0 for 'no match')
 ipblink_speed:
-        .byte   3
+        .byte   2
 
 ipblink_x := 210
 ipblink_y := 65
@@ -553,6 +553,30 @@ ipblink_bitmap:
         .byte   px(%0000000),px(%0110000),px(%0000001),px(%1000000),px(%0000110),px(%0000000)
         .byte   px(%0000000),px(%0000000),px(%0000001),px(%1000000),px(%0000000),px(%0000000)
         .byte   px(%0000110),px(%0000000),px(%0000001),px(%1000000),px(%0000000),px(%0110000)
+
+.proc ipblink_bitmap_ip_params
+viewloc:        DEFINE_POINT ipblink_x + 120 - 1 + 20, ipblink_y
+mapbits:        .addr   ipblink_ip_bitmap
+mapwidth:       .byte   1
+reserved:       .byte   0
+cliprect:       DEFINE_RECT 0, 0, 1, 12
+.endproc
+
+ipblink_ip_bitmap:
+        .byte   px(%1100000)
+        .byte   px(%1100000)
+        .byte   px(%1100000)
+        .byte   px(%1100000)
+        .byte   px(%1100000)
+        .byte   px(%1100000)
+        .byte   px(%1100000)
+        .byte   px(%1100000)
+        .byte   px(%1100000)
+        .byte   px(%1100000)
+        .byte   px(%1100000)
+        .byte   px(%1100000)
+        .byte   px(%1100000)
+
 ;;; ============================================================
 
 .proc init
@@ -565,6 +589,8 @@ ipblink_bitmap:
         jsr     draw_window
         MGTK_CALL MGTK::FlushEvents
         ;; fall through
+
+
 .endproc
 
 .proc input_loop
@@ -577,6 +603,8 @@ ipblink_bitmap:
         beq     handle_key
 
         jsr     do_joystick
+
+        jsr     do_ipblink
 
         jmp     input_loop
 .endproc
@@ -621,8 +649,8 @@ ipblink_bitmap:
 .proc handle_close
         MGTK_CALL MGTK::TrackGoAway, trackgoaway_params
         lda     trackgoaway_params::clicked
-        beq     input_loop
         bne     exit
+        jmp     input_loop
 .endproc
 
 ;;; ============================================================
@@ -1178,6 +1206,7 @@ done:   MGTK_CALL MGTK::ShowCursor
         jsr     draw_radio_button
 .endproc
 
+
 .proc draw_ipblink_buttons
         MGTK_CALL MGTK::SetPenMode, notpencopy
 
@@ -1616,7 +1645,13 @@ done:   rts
 .proc handle_ipblink_click
         sta     ipblink_speed
 
-        ;; TODO: Store
+        tax
+        dex
+        lda     ipblink_rate_table,x
+        sta     ipblink_rate
+        sta     ipblink_counter
+
+        ;; TODO: Set in DeskTop
 
         MGTK_CALL MGTK::GetWinPort, winport_params
         MGTK_CALL MGTK::SetPort, grafport
@@ -1625,6 +1660,34 @@ done:   rts
         MGTK_CALL MGTK::ShowCursor
         jmp     input_loop
 .endproc
+
+ipblink_rate:
+        .byte   120
+
+ipblink_rate_table:
+        .byte   240, 120, 60
+
+ipblink_counter:
+        .byte   120
+
+.proc do_ipblink
+        dec     ipblink_counter
+        lda     ipblink_counter
+        bne     done
+
+        copy    ipblink_rate, ipblink_counter
+        ;; Defer if content area is not visible
+        MGTK_CALL MGTK::GetWinPort, winport_params
+        cmp     #MGTK::Error::window_obscured
+        beq     done
+
+        MGTK_CALL MGTK::SetPenMode, penXOR
+        MGTK_CALL MGTK::PaintBits, ipblink_bitmap_ip_params
+
+done:   rts
+
+.endproc
+
 
 
 ;;; ============================================================
