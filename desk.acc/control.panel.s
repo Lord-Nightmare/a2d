@@ -48,8 +48,8 @@ entry:
 ;;; ============================================================
 
 da_window_id    := 61
-da_width        := 420
-da_height       := 120
+da_width        := 416
+da_height       := 122
 da_left         := (screen_width - da_width)/2
 da_top          := (screen_height - da_height - 8)/2
 
@@ -87,6 +87,18 @@ textback:       .byte   $7F
 textfont:       .addr   DEFAULT_FONT
 nextwinfo:      .addr   0
 .endproc
+
+.proc frame_pensize
+penwidth:       .byte   4
+penheight:      .byte   2
+.endproc
+
+frame_p1:       DEFINE_POINT 0, 58
+frame_p2:       DEFINE_POINT da_width, 58
+frame_p3:       DEFINE_POINT 190, 0
+frame_p4:       DEFINE_POINT 190, da_height
+
+frame_rect:     DEFINE_RECT AS_WORD(-1), AS_WORD(-1), da_width - 4 + 2, da_height - 2 + 2
 
 
 .proc winfo_fullscreen
@@ -231,8 +243,8 @@ unchecked_bitmap:
 ;;; ============================================================
 ;;; Desktop Pattern Editor Resources
 
-pedit_x := 16
-pedit_y := 8
+pedit_x := 12
+pedit_y := 6
 
 fatbit_w := 8
 fatbit_ws := 3                  ; shift
@@ -310,6 +322,9 @@ rarr_bitmap:
 ;;; ============================================================
 ;;; Double-Click Speed Resources
 
+dblclick_x := 208
+dblclick_y := 6
+
         ;; Selected index (1-3, or 0 for 'no match')
 dblclick_speed:
         .byte   1
@@ -322,9 +337,6 @@ dblclick_value2:
         .word   0
 dblclick_value3:
         .word   0
-
-dblclick_x := 210
-dblclick_y := 8
 
 str_dblclick_speed:
         DEFINE_STRING "Double-Click Speed"
@@ -418,10 +430,8 @@ darr_bitmap:
 ;;; ============================================================
 ;;; Joystick Calibration Resources
 
-
-joycal_x := 16
-joycal_y := 65
-
+joycal_x := 12
+joycal_y := 68
 
 str_calibrate_joystick:
         DEFINE_STRING "Calibrate Joystick"
@@ -465,7 +475,7 @@ joy_marker_bitmap:
 
 
 .proc joystick_params
-viewloc:        DEFINE_POINT joycal_x, joycal_y + 5
+viewloc:        DEFINE_POINT joycal_x, joycal_y + 6
 mapbits:        .addr   joystick_bitmap
 mapwidth:       .byte   6
 reserved:       .byte   0
@@ -496,12 +506,12 @@ joystick_bitmap:
 ;;; ============================================================
 ;;; IP Blink Speed Resources
 
+ipblink_x := 214
+ipblink_y := 75
+
         ;; Selected index (1-3, or 0 for 'no match')
 ipblink_speed:
         .byte   2
-
-ipblink_x := 210
-ipblink_y := 65
 
 str_ipblink_label1:
         DEFINE_STRING "Rate of Insertion"
@@ -589,8 +599,6 @@ ipblink_ip_bitmap:
         jsr     draw_window
         MGTK_CALL MGTK::FlushEvents
         ;; fall through
-
-
 .endproc
 
 .proc input_loop
@@ -1083,7 +1091,6 @@ notpencopy:     .byte   MGTK::notpencopy
         MGTK_CALL MGTK::SetPort, grafport
         MGTK_CALL MGTK::HideCursor
 
-
         ;; ==============================
         ;; Desktop Pattern
 
@@ -1103,6 +1110,8 @@ notpencopy:     .byte   MGTK::notpencopy
 
         jsr     draw_bits
 
+        MGTK_CALL MGTK::SetPenMode, notpencopy
+
         ;; ==============================
         ;; Double-Click Speed
 
@@ -1119,7 +1128,6 @@ loop:   copy    arg1,y, arg2,y
         .endscope
 .endmacro
 
-        MGTK_CALL MGTK::SetPenMode, notpencopy
         ;; TODO: Loop here
         copy32 dblclick_arrow_pos1, darrow_params::viewloc
         MGTK_CALL MGTK::PaintBits, darrow_params
@@ -1136,7 +1144,6 @@ loop:   copy    arg1,y, arg2,y
 
         jsr     draw_dblclick_buttons
 
-        MGTK_CALL MGTK::SetPenMode, notpencopy
         MGTK_CALL MGTK::PaintBits, dblclick_params
 
         MGTK_CALL MGTK::SetPenSize, winfo::penwidth
@@ -1147,10 +1154,8 @@ loop:   copy    arg1,y, arg2,y
         MGTK_CALL MGTK::MoveTo, joystick_label_pos
         MGTK_CALL MGTK::DrawText, str_calibrate_joystick
 
-        MGTK_CALL MGTK::SetPenMode, notpencopy
         MGTK_CALL MGTK::PaintBits, joystick_params
 
-        MGTK_CALL MGTK::SetPenMode, notpencopy
         MGTK_CALL MGTK::FrameRect, joy_disp_frame_rect
 
         MGTK_CALL MGTK::MoveTo, joy_btn0_lpos
@@ -1171,7 +1176,6 @@ loop:   copy    arg1,y, arg2,y
         MGTK_CALL MGTK::MoveTo, ipblink_label2_pos
         MGTK_CALL MGTK::DrawText, str_ipblink_label2
 
-        MGTK_CALL MGTK::SetPenMode, notpencopy
         MGTK_CALL MGTK::PaintBits, ipblink_bitmap_params
 
         MGTK_CALL MGTK::MoveTo, ipblink_slow_pos
@@ -1181,6 +1185,17 @@ loop:   copy    arg1,y, arg2,y
         MGTK_CALL MGTK::DrawText, str_ipblink_fast
 
         jsr     draw_ipblink_buttons
+
+        ;; ==============================
+        ;; Frame
+
+        MGTK_CALL MGTK::SetPenSize, frame_pensize
+        MGTK_CALL MGTK::MoveTo, frame_p1
+        MGTK_CALL MGTK::LineTo, frame_p2
+        MGTK_CALL MGTK::MoveTo, frame_p3
+        MGTK_CALL MGTK::LineTo, frame_p4
+        MGTK_CALL MGTK::FrameRect, frame_rect
+        MGTK_CALL MGTK::SetPenSize, winfo::penwidth
 
 done:   MGTK_CALL MGTK::ShowCursor
         rts
