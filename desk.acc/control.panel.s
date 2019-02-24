@@ -11,8 +11,6 @@
 
         .org $800
 
-        desktop_pattern := $65AA
-
 entry:
 
 ;;; Copy the DA to AUX for easy bank switching
@@ -1036,19 +1034,19 @@ current_counter:
 ;;; ============================================================
 
 .proc init_pattern
-        ldy     #7
-:       copy    desktop_pattern,y, pattern,y
+        ptr = $06
+
+        MGTK_CALL MGTK::GetDeskPat, ptr
+        ldy     #.sizeof(MGTK::Pattern)-1
+:       lda     (ptr),y
+        sta     pattern,y
         dey
         bpl     :-
         rts
 .endproc
 
 .proc handle_pattern_click
-        ;; TODO: Replace this horrible hack
-        ldy     #7
-:       copy    pattern,y, desktop_pattern,y
-        dey
-        bpl     :-
+        MGTK_CALL MGTK::SetDeskPat, pattern
 
         MGTK_CALL MGTK::OpenWindow, winfo_fullscreen
         MGTK_CALL MGTK::CloseWindow, winfo_fullscreen
