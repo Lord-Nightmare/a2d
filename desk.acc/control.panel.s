@@ -301,8 +301,8 @@ reserved:       .byte   0
 cliprect:       DEFINE_RECT 0, 0, arr_w-1, arr_h-1
 .endproc
 
-larr_rect:      DEFINE_RECT larr_l, larr_t, larr_r, larr_b
-rarr_rect:      DEFINE_RECT rarr_l, rarr_t, rarr_r, rarr_b
+larr_rect:      DEFINE_RECT larr_l-2, larr_t, larr_r+2, larr_b
+rarr_rect:      DEFINE_RECT rarr_l-2, rarr_t, rarr_r+2, rarr_b
 
 larr_bitmap:
         .byte   px(%0000110)
@@ -473,33 +473,33 @@ joy_marker_bitmap:
 
 
 .proc joystick_params
-viewloc:        DEFINE_POINT joycal_x, joycal_y + 6
+viewloc:        DEFINE_POINT joycal_x+1, joycal_y + 6
 mapbits:        .addr   joystick_bitmap
 mapwidth:       .byte   6
 reserved:       .byte   0
-cliprect:       DEFINE_RECT 0, 0, 37, 18
+cliprect:       DEFINE_RECT 0, 0, 35, 18
 .endproc
 
 joystick_bitmap:
-        .byte   px(%0000000),px(%0000000),px(%0000000),px(%0000000),px(%1110000),px(%0000000)
-        .byte   px(%0000110),px(%0111111),px(%1111111),px(%1000011),px(%1110000),px(%0000000)
-        .byte   px(%0000000),px(%0000000),px(%0000000),px(%0000111),px(%1110000),px(%0000000)
-        .byte   px(%0000001),px(%1001111),px(%1111110),px(%0001111),px(%1100000),px(%0000000)
-        .byte   px(%0000000),px(%0000000),px(%0000000),px(%0011111),px(%1000000),px(%0000000)
-        .byte   px(%0000000),px(%1100111),px(%1111000),px(%0111111),px(%0000000),px(%0000000)
-        .byte   px(%0000000),px(%0000000),px(%0000000),px(%1111110),px(%0000000),px(%0000000)
-        .byte   px(%0000000),px(%0110011),px(%1100001),px(%1111100),px(%0000000),px(%0000000)
-        .byte   px(%0000000),px(%0000000),px(%0000001),px(%1110000),px(%0000000),px(%0000000)
+        .byte   px(%0000000),px(%0000000),px(%0000000),px(%0000001),px(%1100000),px(%0000000)
+        .byte   px(%0001100),px(%1111111),px(%1111111),px(%0000111),px(%1110000),px(%0000000)
+        .byte   px(%0000000),px(%0000000),px(%0000000),px(%0001111),px(%1100000),px(%0000000)
+        .byte   px(%0000011),px(%0011111),px(%1111100),px(%0011111),px(%1000000),px(%0000000)
+        .byte   px(%0000000),px(%0000000),px(%0000000),px(%0111111),px(%0000000),px(%0000000)
+        .byte   px(%0000001),px(%1001111),px(%1110000),px(%1111110),px(%0000000),px(%0000000)
+        .byte   px(%0000000),px(%0000000),px(%0000001),px(%1111100),px(%0000000),px(%0000000)
+        .byte   px(%0000000),px(%1100111),px(%1000001),px(%1110000),px(%0000000),px(%0000000)
         .byte   px(%0000000),px(%0000000),px(%0000001),px(%1000000),px(%0000000),px(%0000000)
-        .byte   px(%0000011),px(%1111000),px(%0000011),px(%0000001),px(%1111100),px(%0000000)
-        .byte   px(%0111111),px(%1111111),px(%1000110),px(%0011111),px(%1111111),px(%1100000)
-        .byte   px(%1100000),px(%0000000),px(%1111111),px(%1110000),px(%0000000),px(%0110000)
-        .byte   px(%1100000),px(%0000000),px(%0000000),px(%0000000),px(%0000000),px(%0110000)
-        .byte   px(%1100000),px(%0000000),px(%0000000),px(%0000000),px(%0000000),px(%0110000)
-        .byte   px(%1100000),px(%0000000),px(%0000000),px(%0000000),px(%0000000),px(%0110000)
-        .byte   px(%0111111),px(%1111111),px(%1111111),px(%1111111),px(%1111111),px(%1100000)
-        .byte   px(%1100000),px(%0000000),px(%0000000),px(%0000000),px(%0000000),px(%0110000)
-        .byte   px(%0111111),px(%1111111),px(%1111111),px(%1111111),px(%1111111),px(%1100000)
+        .byte   px(%0000000),px(%0000000),px(%0000011),px(%0000000),px(%0000000),px(%0000000)
+        .byte   px(%0000000),px(%0000000),px(%0000110),px(%0000000),px(%0000000),px(%0000000)
+        .byte   px(%0001111),px(%1111111),px(%1111111),px(%1111111),px(%1111100),px(%0000000)
+        .byte   px(%0011000),px(%0000000),px(%0000000),px(%0000000),px(%0000110),px(%0000000)
+        .byte   px(%0011000),px(%0000000),px(%0000000),px(%0000000),px(%0000110),px(%0000000)
+        .byte   px(%0111111),px(%1111111),px(%1111111),px(%1111111),px(%1111111),px(%0000000)
+        .byte   px(%1100000),px(%0000000),px(%0000000),px(%0000000),px(%0000001),px(%1000000)
+        .byte   px(%1100000),px(%0000000),px(%0000000),px(%0000000),px(%0000001),px(%1000000)
+        .byte   px(%1100000),px(%0000000),px(%0000000),px(%0000000),px(%0000001),px(%1000000)
+        .byte   px(%0111111),px(%1111111),px(%1111111),px(%1111111),px(%1111111),px(%0000000)
 
 ;;; ============================================================
 ;;; IP Blink Speed Resources
@@ -1339,12 +1339,16 @@ pattern:
         .byte   %10101010
 
 pattern_index:  .byte   0
-pattern_count := 15
+pattern_count := 15+14
 patterns:
         .addr pattern_checkerboard, pattern_dark, pattern_vdark, pattern_black
         .addr pattern_olives, pattern_scales, pattern_stripes
         .addr pattern_light, pattern_vlight, pattern_xlight, pattern_white
         .addr pattern_cane, pattern_brick, pattern_curvy, pattern_abrick
+        .addr pattern_c1, pattern_c2, pattern_c3, pattern_c4
+        .addr pattern_c5, pattern_c6, pattern_c7, pattern_c8
+        .addr pattern_c9, pattern_cA, pattern_cB, pattern_cC
+        .addr pattern_cD, pattern_cE
 
 pattern_checkerboard:
         .byte   %01010101
@@ -1496,6 +1500,22 @@ pattern_abrick:
         .byte   %10111111
         .byte   %11011111
 
+        ;; Solid colors (note that nibbles are flipped)
+pattern_c1:      .res 8, $88     ; 1 = red
+pattern_c2:      .res 8, $44     ; 2 = brown
+pattern_c3:      .res 8, $CC     ; 3 = orange
+pattern_c4:      .res 8, $22     ; 4 = green
+pattern_c5:      .res 8, $AA     ; 5 = gray1
+pattern_c6:      .res 8, $66     ; 6 = light green
+pattern_c7:      .res 8, $EE     ; 7 = yellow
+pattern_c8:      .res 8, $11     ; 8 = blue
+pattern_c9:      .res 8, $99     ; 9 = magenta
+pattern_cA:      .res 8, $55     ; A = gray2
+pattern_cB:      .res 8, $DD     ; B = pink
+pattern_cC:      .res 8, $33     ; C = light blue
+pattern_cD:      .res 8, $BB     ; D = lavender
+pattern_cE:      .res 8, $77     ; E = aqua
+
 ;;; ============================================================
 
         ;; TODO: Read and visualize all 4 paddles.
@@ -1634,12 +1654,15 @@ pdl3:   .byte   0
         rts
 
 .proc pread
-        ;; Let any previous timer reset
-:       lda     PADDL0,x
+        ;; Let any previous timer reset (but don't wait forever)
+        ldy     #0
+:       dey
+        beq     :+
+        lda     PADDL0,x
         bmi     :-
 
         ;; Read paddle
-        lda     PTRIG
+:       lda     PTRIG
         ldy     #0
         nop
         nop
